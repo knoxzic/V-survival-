@@ -1,0 +1,31 @@
+@* Heads-up display with ammo + vitals for first person play. *@
+<div class="hud-root">
+  <div class="hud-top-right card">
+    <div class="weapon-name">@WeaponId</div>
+    <div class="magazine">Magazine: @AmmoInMagazine</div>
+    <div class="ammo">Light: @LightAmmo | Heavy: @HeavyAmmo | Shell: @ShellAmmo</div>
+  </div>
+
+  <div class="hud-bottom-left card">
+    <div>Health</div>
+    <progress max="100" value="@Health"></progress>
+    <div>Stamina</div>
+    <progress max="100" value="@Stamina"></progress>
+    <div>Hunger</div>
+    <progress max="100" value="@Hunger"></progress>
+    <div>Thirst</div>
+    <progress max="100" value="@Thirst"></progress>
+  </div>
+</div>
+
+@code {
+  [Parameter] public string WeaponId { get; set; } = "Unarmed";
+  [Parameter] public int AmmoInMagazine { get; set; }
+  [Parameter] public int LightAmmo { get; set; }
+  [Parameter] public int HeavyAmmo { get; set; }
+  [Parameter] public int ShellAmmo { get; set; }
+  [Parameter] public float Health { get; set; } = 100f;
+  [Parameter] public float Stamina { get; set; } = 100f;
+  [Parameter] public float Hunger { get; set; } = 100f;
+  [Parameter] public float Thirst { get; set; } = 100f;
+}

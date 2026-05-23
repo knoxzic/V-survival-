@@ -1,0 +1,87 @@
+@* Rust-like layout: player left, 24-slot inventory right, weapon slots top. *@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="inventory-root">
+  <section class="character-panel card">
+    <h3>Character</h3>
+    <p>Paper doll / model preview goes here.</p>
+
+    <h4>Weapon Slots</h4>
+    <div class="weapon-slots">
+      <div class="slot">Primary: @(WeaponSlots.Count > 0 ? WeaponSlots[0] ?? "Empty" : "Empty")</div>
+      <div class="slot">Secondary: @(WeaponSlots.Count > 1 ? WeaponSlots[1] ?? "Empty" : "Empty")</div>
+    </div>
+  </section>
+
+  <section class="resource-panel card">
+    <h3>Inventory (24)</h3>
+    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+    {
+      <p>@StatusMessage</p>
+    }
+    <div class="grid-24">
+      @for (var i = 0; i < 24; i++)
+      {
+        var cell = i < ResourceSlots.Count ? ResourceSlots[i] : null;
+        <div class="slot"
+             draggable="@(cell is not null)"
+             @ondragstart="() => OnDragStart(i)"
+             @ondragover:preventDefault
+             @ondrop="() => OnDrop(i)">
+          @(cell is null ? "Empty" : $"{cell.Value.ItemId} x{cell.Value.Amount}")
+          @if (cell is not null && cell.Value.Amount > 1)
+          {
+            <button @onclick="() => OnSplitHalf(i)">Split Half</button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+@code {
+  private int? _dragSourceIndex;
+  private string? StatusMessage;
+
+  [Parameter] public IReadOnlyList<string?> WeaponSlots { get; set; } = Array.Empty<string?>();
+  [Parameter] public IReadOnlyList<VSurvival.Code.Inventory.InventorySystem.ItemStack?> ResourceSlots { get; set; }
+      = Array.Empty<VSurvival.Code.Inventory.InventorySystem.ItemStack?>();
+  [Parameter] public EventCallback<(int FromIndex, int ToIndex)> OnMoveStack { get; set; }
+  [Parameter] public EventCallback<int> OnSplitStackHalf { get; set; }
+
+  private void OnDragStart(int index)
+  {
+    _dragSourceIndex = index;
+    StatusMessage = $"Dragging slot {index + 1}";
+  }
+
+  private async Task OnDrop(int toIndex)
+  {
+    if (_dragSourceIndex is null)
+    {
+      StatusMessage = "No source stack selected.";
+      return;
+    }
+
+    if (OnMoveStack.HasDelegate)
+    {
+      await OnMoveStack.InvokeAsync((_dragSourceIndex.Value, toIndex));
+      StatusMessage = $"Moved slot {_dragSourceIndex.Value + 1} to slot {toIndex + 1}.";
+    }
+
+    _dragSourceIndex = null;
+  }
+
+  private async Task OnSplitHalf(int index)
+  {
+    if (!OnSplitStackHalf.HasDelegate)
+    {
+      StatusMessage = "Split callback is not wired.";
+      return;
+    }
+
+    await OnSplitStackHalf.InvokeAsync(index);
+    StatusMessage = $"Requested split from slot {index + 1}.";
+  }
+}
