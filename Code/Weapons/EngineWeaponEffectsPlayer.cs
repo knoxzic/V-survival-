@@ -1,6 +1,6 @@
 namespace VSurvival.Code.Weapons;
 
-// Replace these methods with your engine audio/particle APIs.
+// Replace these methods with the real S&box 2026 audio and particle APIs.
 public sealed class EngineWeaponEffectsPlayer : IWeaponEffectsPlayer
 {
     public void PlayMuzzleFlash(string weaponId)
